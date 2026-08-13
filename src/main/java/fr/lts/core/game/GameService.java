@@ -138,14 +138,15 @@ public class GameService {
      */
     private void stunPlayer(ServerPlayerEntity player) {
         player.setInvulnerable(true);
-        // Vitesse de déplacement = 0. On stocke l'ancienne valeur via
-        // l'attribut directement (la valeur de base).
+        // Vitesse de déplacement = 0 (empêche de bouger).
         EntityAttributeInstance speed = player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
         if (speed != null) {
-            // Applique un modificateur multiplicatif à 0 pour immobiliser.
-            // On ne remplace pas la base pour pouvoir restaurer ensuite.
             speed.setBaseValue(0.0);
         }
+        // Passe en mode ADVENTURE : ne peut ni casser ni poser de blocs.
+        // La vitesse etant a 0, le joueur ne peut pas se deplacer au sol.
+        // Le saut reste possible mais ne deplace pas loin. Vision libre.
+        player.interactionManager.setGameMode(GameMode.ADVENTURE);
         // Nourriture au max pour éviter la régénération/recoil, et santé max.
         player.getHungerManager().setFoodLevel(20);
         player.getHungerManager().setSaturationLevel(5.0F);
@@ -159,12 +160,13 @@ public class GameService {
      */
     private void unstunPlayer(ServerPlayerEntity player) {
         player.setInvulnerable(false);
+        // Restaure la vitesse de marche vanilla (0.1).
         EntityAttributeInstance speed = player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
         if (speed != null) {
-            // Vitesse de marche vanilla : 0.1 (EntityAttributes.GENERIC_MOVEMENT_SPEED
-            // default value is 0.1).
             speed.setBaseValue(0.10000000149011612D);
         }
+        // Repasse en mode SURVIVAL pour rejouer.
+        player.interactionManager.setGameMode(GameMode.SURVIVAL);
     }
 
     // ----- /lts start -----
