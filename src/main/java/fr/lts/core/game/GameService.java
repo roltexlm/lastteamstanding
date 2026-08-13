@@ -146,7 +146,7 @@ public class GameService {
         // Passe en mode ADVENTURE : ne peut ni casser ni poser de blocs.
         // La vitesse etant a 0, le joueur ne peut pas se deplacer au sol.
         // Le saut reste possible mais ne deplace pas loin. Vision libre.
-        player.interactionManager.setGameMode(GameMode.ADVENTURE);
+        player.changeGameMode(GameMode.ADVENTURE);
         // Nourriture au max pour éviter la régénération/recoil, et santé max.
         player.getHungerManager().setFoodLevel(20);
         player.getHungerManager().setSaturationLevel(5.0F);
@@ -166,7 +166,7 @@ public class GameService {
             speed.setBaseValue(0.10000000149011612D);
         }
         // Repasse en mode SURVIVAL pour rejouer.
-        player.interactionManager.setGameMode(GameMode.SURVIVAL);
+        player.changeGameMode(GameMode.SURVIVAL);
     }
 
     // ----- /lts start -----
