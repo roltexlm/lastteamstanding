@@ -6,30 +6,38 @@ import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameMode;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
 /**
- * Gestionnaire de mort des joueurs : implémente le one-life du mode hardcore.
+ * Gestionnaire de mort et respawn : implémente le one-life (hardcore hybride).
  *
- * <p>Lorsqu'un joueur meurt pendant que la partie est en cours
- * ({@link GamePhase#RUNNING}) :</p>
- * <ul>
- *   <li>En mode {@link HardcoreMode#EASY} : le joueur est passé en
- *       spectateur (il ne peut plus jouer, mais n'est pas banni).</li>
- *   <li>En mode {@link HardcoreMode#VANILLA} : le comportement est géré par
- *       le hardcore vanilla du monde (bannissement automatique), donc on ne
- *       fait rien ici.</li>
- * </ul>
+ * <p>Peu importe le mode (EASY ou VANILLA), le comportement est identique :</p>
+ * <ol>
+ *   <li>Le joueur meurt → sa position de mort est mémorisée.</li>
+ *   <li>Quand il clique pour respawn, il est immédiatement repassé en
+ *       <b>spectateur</b> et téléporté à l'endroit exact de sa mort.</li>
+ * </ol>
  *
- * <p>Ce handler est appelé via l'événement {@code ServerLivingEvents.AFTER_DEATH}
- * de Fabric API, enregistré dans {@link fr.lts.core.LtsCore}.</p>
+ * <p>Ainsi le joueur ne rejoue jamais (one-life) mais peut regarder le reste
+ * de la partie depuis sa position de mort. Le bannissement vanilla est
+ * neutralisé car on intercepte le respawn avant qu'il ne s'applique.</p>
+ *
+ * <p>La texture hardcore des cœurs est activée via le flag {@code hardcore}
+ * du monde (voir {@link GameService#setHardcore}), indépendamment d'ici.</p>
  */
 public final class PlayerDeathHandler {
+
+    /** Position de mort de chaque joueur (x, y, z), pour le téléport de respawn. */
+    private static final Map<UUID, double[]> DEATH_POSITIONS = new HashMap<>();
 
     private PlayerDeathHandler() {
     }
 
     /**
-     * À appeler après la mort d'une entité vivante. Ne fait quelque chose que
-     * si l'entité est un joueur et que la partie est en cours.
+     * Appelé après la mort d'une entité vivante. Mémorise la position de mort
+     * du joueur et incrémente le compteur de kills.
      */
     public static void onAfterDeath(LivingEntity entity, DamageSource source) {
         if (!(entity instanceof ServerPlayerEntity)) {
@@ -45,15 +53,43 @@ public final class PlayerDeathHandler {
             return;
         }
 
+        // Mémorise la position de mort pour le respawn → spectateur.
+        DEATH_POSITIONS.put(player.getUuid(),
+            new double[]{player.getX(), player.getY(), player.getZ()});
+
         // Compter le kill (pour l'affichage HUD).
         state.incrementKillCount();
+    }
 
-        // En mode EASY, le one-life = passage en spectateur (pas de ban).
-        if (state.getHardcore() == HardcoreMode.EASY) {
-            // S'assurer que le respawn n'a pas déjà eu lieu ; on passe en
-            // spectateur au prochain tick via le gamemode.
-            player.changeGameMode(GameMode.SPECTATOR);
+    /**
+     * Appelé après le respawn d'un joueur. Si le joueur était marqué comme
+     * mort (one-life), on le repasse immédiatement en spectateur et on le
+     * téléporte à sa position de mort.
+     *
+     * @param oldPlayer l'ancienne instance du joueur (avant respawn).
+     * @param newPlayer la nouvelle instance du joueur (après respawn).
+     */
+    public static void onAfterRespawn(ServerPlayerEntity oldPlayer,
+                                      ServerPlayerEntity newPlayer,
+                                      boolean alive) {
+        GameService game = LtsState.getGameService();
+        GameState state = game.getState();
+
+        // On n'agit que pendant la partie en cours.
+        if (state.getPhase() != GamePhase.RUNNING) {
+            return;
         }
-        // En mode VANILLA, le hardcore du monde bannit automatiquement.
+
+        UUID id = newPlayer.getUuid();
+        double[] pos = DEATH_POSITIONS.remove(id);
+        if (pos == null) {
+            // Pas de mort enregistrée : on ne fait rien (pas un one-life).
+            return;
+        }
+
+        // Repasse en spectateur et téléporte à la position de mort.
+        newPlayer.changeGameMode(GameMode.SPECTATOR);
+        newPlayer.teleport(newPlayer.getServerWorld(), pos[0], pos[1], pos[2],
+            newPlayer.getYaw(), newPlayer.getPitch());
     }
 }

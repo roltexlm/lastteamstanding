@@ -225,14 +225,20 @@ public class GameService {
     // ----- Hardcore -----
 
     /**
-     * Change le mode hardcore et applique la difficulté du monde en conséquence.
+     * Applique le mode hardcore : active la texture hardcore (cœurs) et
+     * règle la difficulté du monde.
      *
-     * <p>En mode {@link HardcoreMode#EASY} : difficulté EASY + hardcore OFF
-     * (pas de bannissement automatique, le one-life est géré par le listener
-     * de mort qui passe le joueur en spectateur).</p>
+     * <p>Dans les deux modes (EASY/VANILLA), le flag {@code hardcore} du monde
+     * est activé pour que le client affiche la texture hardcore des cœurs.
+     * Le one-life (passage en spectateur à la mort) est géré par
+     * {@link PlayerDeathHandler}, indépendamment du mode.</p>
      *
-     * <p>En mode {@link HardcoreMode#VANILLA} : difficulté HARD + hardcore ON
-     * (bannissement automatique à la mort, comportement vanilla).</p>
+     * <p>La seule différence entre les modes est la difficulté du monde :</p>
+     * <ul>
+     *   <li>{@link HardcoreMode#EASY} : difficulté EASY (mobs atténués,
+     *       pas de poison/wither, famine non létale).</li>
+     *   <li>{@link HardcoreMode#VANILLA} : difficulté HARD.</li>
+     * </ul>
      */
     public void setHardcore(HardcoreMode mode, MinecraftServer server) {
         state.setHardcore(mode);
@@ -240,16 +246,16 @@ public class GameService {
         ServerWorld world = server.getOverworld();
         if (world == null) return;
 
+        // Active le flag hardcore du monde : le client affichera la texture
+        // hardcore des cœurs. Le bannissement vanilla est neutralisé par
+        // notre gestion du respawn (AFTER_RESPAWN → spectateur).
+        server.getSaveProperties().setHardcore(true);
+
         switch (mode) {
             case EASY:
-                // Difficulté EASY : mobs atténués, pas de poison/wither,
-                // famine non létale. Hardcore vanilla OFF (one-life géré
-                // par le listener de mort qui passe en spectateur).
                 world.setDifficulty(Difficulty.EASY, true);
                 break;
             case VANILLA:
-                // Difficulté HARD + hardcore vanilla ON (bannissement
-                // automatique à la mort).
                 world.setDifficulty(Difficulty.HARD, true);
                 break;
         }
