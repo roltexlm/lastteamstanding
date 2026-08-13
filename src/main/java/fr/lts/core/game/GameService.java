@@ -236,9 +236,7 @@ public class GameService {
     public void endByTimer(MinecraftServer server) {
         state.setPhase(GamePhase.ENDED);
         // TODO: affichage title des vainqueurs ex aequo (UI).
-        server.getPlayerManager().broadcast(
-            new net.minecraft.text.LiteralText("§6Temps écoulé ! Les teams restantes gagnent ex aequo."),
-            false);
+        broadcastMessage(server, "§6Temps écoulé ! Les teams restantes gagnent ex aequo.");
     }
 
     /**
@@ -251,13 +249,19 @@ public class GameService {
         state.setPhase(GamePhase.ENDED);
         // TODO: affichage title des vainqueurs (UI).
         if (winner != null) {
-            server.getPlayerManager().broadcast(
-                new net.minecraft.text.LiteralText("§6Victoire de la team " + winner.getColor().getDisplayName() + " !"),
-                false);
+            broadcastMessage(server, "§6Victoire de la team " + winner.getColor().getDisplayName() + " !");
         } else {
-            server.getPlayerManager().broadcast(
-                new net.minecraft.text.LiteralText("§6Fin de partie : ex aequo."),
-                false);
+            broadcastMessage(server, "§6Fin de partie : ex aequo.");
+        }
+    }
+
+    /**
+     * Diffuse un message chat a tous les joueurs connectes.
+     */
+    private static void broadcastMessage(MinecraftServer server, String message) {
+        net.minecraft.text.Text text = new net.minecraft.text.LiteralText(message);
+        for (net.minecraft.server.network.ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            player.sendMessage(text, false);
         }
     }
 

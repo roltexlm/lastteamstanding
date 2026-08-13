@@ -79,7 +79,6 @@ public final class GameTimer {
                 new LiteralText(name),
                 ScoreboardCriterion.RenderType.INTEGER);
         }
-        scoreboard.setObjectiveSlot(Scoreboard.SLOT_BELOW_NAME, objective);
         // Score du holder.
         scoreboard.getPlayerScore(holder, objective).setScore(value);
     }
