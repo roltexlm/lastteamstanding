@@ -4,7 +4,6 @@ import fr.lts.core.command.LtsCommands;
 import fr.lts.core.game.PlayerDeathHandler;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
-import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,10 +30,11 @@ public class LtsCore implements ModInitializer {
         CommandRegistrationCallback.EVENT.register(LtsCommands::register);
 
         // One-life (hardcore hybride) :
-        // - AFTER_DEATH : mémorise la position de mort + compteur de kills.
+        // - ALLOW_DEATH : mémorise la position de mort + compteur de kills
+        //   (appelé au moment des dégâts fatals, avant la mort effective).
         // - AFTER_RESPAWN : repasse immédiatement en spectateur à la position
         //   de mort (le joueur ne rejoue jamais, peu importe le mode).
-        ServerLivingEntityEvents.AFTER_DEATH.register(PlayerDeathHandler::onAfterDeath);
+        ServerPlayerEvents.ALLOW_DEATH.register(PlayerDeathHandler::onAllowDeath);
         ServerPlayerEvents.AFTER_RESPAWN.register(PlayerDeathHandler::onAfterRespawn);
 
         LOGGER.info("[LTS] Coeur de jeu prêt.");

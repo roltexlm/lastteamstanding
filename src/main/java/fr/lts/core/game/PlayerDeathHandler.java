@@ -1,7 +1,6 @@
 package fr.lts.core.game;
 
 import fr.lts.core.LtsState;
-import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.world.GameMode;
@@ -15,9 +14,11 @@ import java.util.UUID;
  *
  * <p>Peu importe le mode (EASY ou VANILLA), le comportement est identique :</p>
  * <ol>
- *   <li>Le joueur meurt → sa position de mort est mémorisée.</li>
+ *   <li>Le joueur subit des dégâts fatals → sa position de mort est mémorisée
+ *       (via {@code ALLOW_DEATH}, appelé avant la mort effective).</li>
  *   <li>Quand il clique pour respawn, il est immédiatement repassé en
- *       <b>spectateur</b> et téléporté à l'endroit exact de sa mort.</li>
+ *       <b>spectateur</b> et téléporté à l'endroit exact de sa mort
+ *       (via {@code AFTER_RESPAWN}).</li>
  * </ol>
  *
  * <p>Ainsi le joueur ne rejoue jamais (one-life) mais peut regarder le reste
@@ -36,21 +37,21 @@ public final class PlayerDeathHandler {
     }
 
     /**
-     * Appelé après la mort d'une entité vivante. Mémorise la position de mort
-     * du joueur et incrémente le compteur de kills.
+     * Appelé quand un joueur subit des dégâts fatals (avant la mort effective).
+     * Mémorise la position de mort et incrémente le compteur de kills.
+     *
+     * @return {@code true} pour laisser la mort se produire (le joueur meurt,
+     *         puis géré au respawn).
      */
-    public static void onAfterDeath(LivingEntity entity, DamageSource source) {
-        if (!(entity instanceof ServerPlayerEntity)) {
-            return;
-        }
-        ServerPlayerEntity player = (ServerPlayerEntity) entity;
-
+    public static boolean onAllowDeath(ServerPlayerEntity player,
+                                       DamageSource damageSource,
+                                       float damageAmount) {
         GameService game = LtsState.getGameService();
         GameState state = game.getState();
 
         // On n'agit que pendant la partie en cours.
         if (state.getPhase() != GamePhase.RUNNING) {
-            return;
+            return true;
         }
 
         // Mémorise la position de mort pour le respawn → spectateur.
@@ -59,6 +60,10 @@ public final class PlayerDeathHandler {
 
         // Compter le kill (pour l'affichage HUD).
         state.incrementKillCount();
+
+        // Laisse la mort se produire : le joueur mourra, puis au respawn
+        // on le repassera en spectateur à cette position.
+        return true;
     }
 
     /**
@@ -68,6 +73,7 @@ public final class PlayerDeathHandler {
      *
      * @param oldPlayer l'ancienne instance du joueur (avant respawn).
      * @param newPlayer la nouvelle instance du joueur (après respawn).
+     * @param alive     si l'ancien joueur est encore vivant.
      */
     public static void onAfterRespawn(ServerPlayerEntity oldPlayer,
                                       ServerPlayerEntity newPlayer,
