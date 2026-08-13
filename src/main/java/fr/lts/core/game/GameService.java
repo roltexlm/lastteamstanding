@@ -210,7 +210,7 @@ public class GameService {
                     continue;
                 }
                 unstunPlayer(player);
-                player.interactionManager.setGameMode(GameMode.SPECTATOR);
+                player.interactionManager.setGameMode(player.interactionManager.getGameMode(), GameMode.SPECTATOR);
             }
         }
 
