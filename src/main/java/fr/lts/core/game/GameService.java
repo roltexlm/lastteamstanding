@@ -224,6 +224,43 @@ public class GameService {
         return StopResult.success();
     }
 
+    // ----- Fin de partie (timer / victoire) -----
+
+    /**
+     * Fin de partie par écoulement du timer : les teams restantes gagnent
+     * ex aequo. Passe la partie en phase ENDED.
+     *
+     * <p>L'affichage des vainqueurs (title + joueurs) sera géré côté UI
+     * (à implémenter).</p>
+     */
+    public void endByTimer(MinecraftServer server) {
+        state.setPhase(GamePhase.ENDED);
+        // TODO: affichage title des vainqueurs ex aequo (UI).
+        server.getPlayerManager().broadcast(
+            new net.minecraft.text.LiteralText("§6Temps écoulé ! Les teams restantes gagnent ex aequo."),
+            false);
+    }
+
+    /**
+     * Fin de partie par victoire d'une team (dernière survivante).
+     *
+     * @param winner la team gagnante, ou {@code null} si ex aequo (aucune team
+     *               vivante).
+     */
+    public void endByVictory(MinecraftServer server, fr.lts.core.team.Team winner) {
+        state.setPhase(GamePhase.ENDED);
+        // TODO: affichage title des vainqueurs (UI).
+        if (winner != null) {
+            server.getPlayerManager().broadcast(
+                new net.minecraft.text.LiteralText("§6Victoire de la team " + winner.getColor().getDisplayName() + " !"),
+                false);
+        } else {
+            server.getPlayerManager().broadcast(
+                new net.minecraft.text.LiteralText("§6Fin de partie : ex aequo."),
+                false);
+        }
+    }
+
     // ----- Hardcore -----
 
     /**
