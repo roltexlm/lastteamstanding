@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "lts-core",
+  "version": "${version}",
+  "name": "Last Team Standing - Core",
+  "description": "Coeur du mode de jeu Last Team Standing : teams, timer, téléportation, commandes, fin de partie.",
+  "authors": [
+    "LTS Team"
+  ],
+  "contact": {
+    "homepage": "https://github.com/lts/lts-core",
+    "sources": "https://github.com/lts/lts-core"
+  },
+  "license": "MIT",
+  "icon": "assets/lts-core/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "fr.lts.core.LtsCore"
+    ],
+    "client": [
+      "fr.lts.core.client.LtsCoreClient"
+    ]
+  },
+  "mixins": [
+    "lts-core.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=0.12.0",
+    "fabric": ">=0.37.0",
+    "minecraft": "1.17.1",
+    "java": ">=16"
+  },
+  "suggests": {
+    "another-mod": "*"
+  }
+}
