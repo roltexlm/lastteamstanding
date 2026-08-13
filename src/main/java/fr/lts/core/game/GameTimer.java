@@ -81,6 +81,9 @@ public final class GameTimer {
         }
         // Score du holder.
         scoreboard.getPlayerScore(holder, objective).setScore(value);
+        // Place l'objectif dans un display slot (SIDEBAR) pour qu'il soit
+        // sync au client. Sans slot, l'objectif n'est pas propagé au client.
+        scoreboard.setObjectiveSlot(Scoreboard.SIDEBAR_DISPLAY_SLOT_ID, objective);
     }
 
     /**
