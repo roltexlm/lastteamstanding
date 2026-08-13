@@ -29,7 +29,7 @@ public final class StopCommand {
 
     private static int execute(CommandContext<ServerCommandSource> ctx) {
         GameService game = LtsState.getGameService();
-        GameService.StopResult result = game.stop(ctx.getSource().getMinecraftServer());
+        GameService.StopResult result = game.stop(ctx.getSource().getServer());
 
         if (result.success) {
             ctx.getSource().sendFeedback(new LiteralText(result.message), true);

@@ -29,7 +29,7 @@ public final class StartCommand {
 
     private static int execute(CommandContext<ServerCommandSource> ctx) {
         GameService game = LtsState.getGameService();
-        GameService.StartResult result = game.start(ctx.getSource().getMinecraftServer());
+        GameService.StartResult result = game.start(ctx.getSource().getServer());
 
         if (result.success) {
             ctx.getSource().sendFeedback(new LiteralText(result.message), true);

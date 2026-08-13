@@ -13,6 +13,7 @@ import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
+import net.minecraft.text.MutableText;
 import net.minecraft.util.Formatting;
 
 import java.util.ArrayList;
@@ -103,7 +104,7 @@ public final class TeamCommands {
         if (players == null) {
             // Tous les joueurs connectés.
             ids = new ArrayList<>();
-            for (ServerPlayerEntity p : ctx.getSource().getMinecraftServer().getPlayerManager().getPlayerList()) {
+            for (ServerPlayerEntity p : ctx.getSource().getServer().getPlayerManager().getPlayerList()) {
                 ids.add(p.getUuid());
             }
         } else {
@@ -137,7 +138,7 @@ public final class TeamCommands {
 
         for (Team team : active) {
             Formatting fmt = formatFor(team.getColor());
-            LiteralText line = new LiteralText("  " + team.getColor().getDisplayName()).formatted(fmt);
+            MutableText line = new LiteralText("  " + team.getColor().getDisplayName()).formatted(fmt);
             line.append(new LiteralText(" : " + team.size() + " membres").formatted(Formatting.WHITE));
             ctx.getSource().sendFeedback(line, false);
         }

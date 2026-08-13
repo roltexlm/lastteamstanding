@@ -31,7 +31,7 @@ public final class TpCommand {
         GameService game = LtsState.getGameService();
         boolean force = game.getState().isTpForceNext();
 
-        GameService.TpResult result = game.teleportTeams(ctx.getSource().getMinecraftServer(), force);
+        GameService.TpResult result = game.teleportTeams(ctx.getSource().getServer(), force);
 
         if (result.success) {
             ctx.getSource().sendFeedback(new LiteralText(result.message), true);
