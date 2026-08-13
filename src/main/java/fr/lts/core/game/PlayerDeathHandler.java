@@ -60,8 +60,11 @@ public final class PlayerDeathHandler {
         DEATH_POSITIONS.put(player.getUuid(),
             new double[]{player.getX(), player.getY(), player.getZ()});
 
-        // Compter le kill (pour l'affichage HUD).
-        state.incrementKillCount();
+        // Compte un kill uniquement si la mort a ete causee par un autre
+        // joueur (pas une chute, un mob, etc.).
+        if (damageSource.getAttacker() instanceof ServerPlayerEntity) {
+            state.incrementKillCount();
+        }
 
         // Laisse la mort se produire : le joueur mourra, puis au respawn
         // on le repassera en spectateur à cette position.
