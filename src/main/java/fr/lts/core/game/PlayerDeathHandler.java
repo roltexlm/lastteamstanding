@@ -3,6 +3,8 @@ package fr.lts.core.game;
 import fr.lts.core.LtsState;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.entity.attribute.EntityAttributeInstance;
+import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.world.GameMode;
 
 import java.util.HashMap;
@@ -86,16 +88,24 @@ public final class PlayerDeathHandler {
             return;
         }
 
-        UUID id = newPlayer.getUuid();
-        double[] pos = DEATH_POSITIONS.remove(id);
-        if (pos == null) {
-            // Pas de mort enregistrée : on ne fait rien (pas un one-life).
-            return;
+        // One-life : passe toujours en spectateur (meme si la position de
+        // mort n'a pas ete enregistree par ALLOW_DEATH, par exemple mort par
+        // /kill ou void). Restaure aussi la vitesse (le stun peut avoir
+        // laisse la vitesse a 0, copiee par le respawn vanilla).
+        EntityAttributeInstance speed = newPlayer.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+        if (speed != null) {
+            speed.setBaseValue(0.10000000149011612D);
         }
 
-        // Repasse en spectateur et téléporte à la position de mort.
+        UUID id = newPlayer.getUuid();
+        double[] pos = DEATH_POSITIONS.remove(id);
+        if (pos != null) {
+            // Teleporte a la position de mort enregistree.
+            newPlayer.teleport(newPlayer.getServerWorld(), pos[0], pos[1], pos[2],
+                newPlayer.getYaw(), newPlayer.getPitch());
+        }
+
+        // Passe en spectateur dans tous les cas (one-life).
         newPlayer.changeGameMode(GameMode.SPECTATOR);
-        newPlayer.teleport(newPlayer.getServerWorld(), pos[0], pos[1], pos[2],
-            newPlayer.getYaw(), newPlayer.getPitch());
     }
 }

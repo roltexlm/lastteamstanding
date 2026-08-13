@@ -8,6 +8,8 @@ import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.scoreboard.ScoreboardCriterion;
 import net.minecraft.scoreboard.ScoreboardObjective;
 import net.minecraft.text.LiteralText;
+import fr.lts.core.LtsCore;
+import org.apache.logging.log4j.Logger;
 
 import java.util.List;
 
@@ -38,6 +40,8 @@ public final class GameTimer {
      * À appeler à chaque tick serveur. Met à jour le scoreboard et vérifie la
      * fin de partie.
      */
+    private static final Logger LOGGER = LtsCore.LOGGER;
+
     public static void onServerTick(MinecraftServer server) {
         GameService game = LtsState.getGameService();
         GameState state = game.getState();
@@ -46,6 +50,11 @@ public final class GameTimer {
         if (state.getPhase() != GamePhase.RUNNING) {
             return;
         }
+
+        long remainingTicks = game.getRemainingTicks(server);
+        long remainingSeconds = Math.max(0, remainingTicks / 20L);
+        LOGGER.info("[LTS] Tick: phase={}, remaining={}s, kills={}",
+            state.getPhase(), remainingSeconds, state.getKillCount());
 
         Scoreboard scoreboard = server.getScoreboard();
 
