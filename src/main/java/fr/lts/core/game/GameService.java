@@ -246,17 +246,16 @@ public class GameService {
         ServerWorld world = server.getOverworld();
         if (world == null) return;
 
-        // Active le flag hardcore du monde : le client affichera la texture
-        // hardcore des cœurs. Le bannissement vanilla est neutralisé par
-        // notre gestion du respawn (AFTER_RESPAWN → spectateur).
-        server.getSaveProperties().setHardcore(true);
+        // NOTE: la texture hardcore des cœurs est gérée côté client via
+        // un resource pack embarqué (assets/minecraft/textures/gui/icons.png)
+        // car le flag 'hardcore' du monde est immuable (LevelInfo) en 1.17.1.
 
         switch (mode) {
             case EASY:
-                world.setDifficulty(Difficulty.EASY, true);
+                server.getSaveProperties().setDifficulty(Difficulty.EASY);
                 break;
             case VANILLA:
-                world.setDifficulty(Difficulty.HARD, true);
+                server.getSaveProperties().setDifficulty(Difficulty.HARD);
                 break;
         }
     }
