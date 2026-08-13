@@ -1,8 +1,10 @@
 package fr.lts.core;
 
 import fr.lts.core.command.LtsCommands;
+import fr.lts.core.game.PlayerDeathHandler;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.entity.event.v1.ServerLivingEntityEvents;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -26,6 +28,10 @@ public class LtsCore implements ModInitializer {
 
         // Enregistrement des commandes /lts ...
         CommandRegistrationCallback.EVENT.register(LtsCommands::register);
+
+        // One-life : à la mort d'un joueur en partie, passage en spectateur
+        // (mode easy) ou bannissement vanilla (mode vanilla).
+        ServerLivingEntityEvents.AFTER_DEATH.register(PlayerDeathHandler::onAfterDeath);
 
         LOGGER.info("[LTS] Coeur de jeu prêt.");
     }

@@ -36,7 +36,7 @@ public final class HardcoreCommand {
 
     private static int set(CommandContext<ServerCommandSource> ctx, HardcoreMode mode) {
         GameService game = LtsState.getGameService();
-        game.setHardcore(mode);
+        game.setHardcore(mode, ctx.getSource().getServer());
         ctx.getSource().sendFeedback(
             new LiteralText("Mode hardcore défini sur : " + mode.name().toLowerCase() + "."), false);
         return 1;

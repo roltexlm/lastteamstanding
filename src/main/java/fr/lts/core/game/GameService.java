@@ -8,6 +8,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.GameMode;
+import net.minecraft.world.Difficulty;
 
 import java.util.List;
 import java.util.Random;
@@ -224,11 +225,34 @@ public class GameService {
     // ----- Hardcore -----
 
     /**
-     * Change le mode hardcore. Ne modifie pas la difficulté du monde ici (fait
-     * ailleurs ou via commande vanilla) : on stocke juste la préférence.
+     * Change le mode hardcore et applique la difficulté du monde en conséquence.
+     *
+     * <p>En mode {@link HardcoreMode#EASY} : difficulté EASY + hardcore OFF
+     * (pas de bannissement automatique, le one-life est géré par le listener
+     * de mort qui passe le joueur en spectateur).</p>
+     *
+     * <p>En mode {@link HardcoreMode#VANILLA} : difficulté HARD + hardcore ON
+     * (bannissement automatique à la mort, comportement vanilla).</p>
      */
-    public void setHardcore(HardcoreMode mode) {
+    public void setHardcore(HardcoreMode mode, MinecraftServer server) {
         state.setHardcore(mode);
+        if (server == null) return;
+        ServerWorld world = server.getOverworld();
+        if (world == null) return;
+
+        switch (mode) {
+            case EASY:
+                // Difficulté EASY : mobs atténués, pas de poison/wither,
+                // famine non létale. Hardcore vanilla OFF (one-life géré
+                // par le listener de mort qui passe en spectateur).
+                world.setDifficulty(Difficulty.EASY, true);
+                break;
+            case VANILLA:
+                // Difficulté HARD + hardcore vanilla ON (bannissement
+                // automatique à la mort).
+                world.setDifficulty(Difficulty.HARD, true);
+                break;
+        }
     }
 
     // ----- Résultats -----

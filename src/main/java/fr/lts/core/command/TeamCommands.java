@@ -46,6 +46,7 @@ public final class TeamCommands {
             .then(literal("assign")
                 .then(argument("player", EntityArgumentType.player())
                     .then(argument("color", StringArgumentType.word())
+                        .suggests(TeamColorSuggestionProvider.INSTANCE)
                         .executes(TeamCommands::assign))))
             .then(literal("random")
                 .executes(ctx -> randomAssign(ctx, null))
