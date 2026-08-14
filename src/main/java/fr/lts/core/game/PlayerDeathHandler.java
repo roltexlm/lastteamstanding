@@ -60,10 +60,21 @@ public final class PlayerDeathHandler {
         DEATH_POSITIONS.put(player.getUuid(),
             new double[]{player.getX(), player.getY(), player.getZ()});
 
-        // Compte un kill uniquement si la mort a ete causee par un autre
-        // joueur (pas une chute, un mob, etc.).
+        // Compte un kill pour l'attaquant si la mort a ete causee par un autre
+        // joueur (pas une chute, un mob, etc.). On incremente le compteur du
+        // tueur, pas de la victime.
         if (damageSource.getAttacker() instanceof ServerPlayerEntity) {
-            state.incrementKillCount();
+            ServerPlayerEntity killer = (ServerPlayerEntity) damageSource.getAttacker();
+            // Met a jour le scoreboard du tueur (lts_kills).
+            net.minecraft.scoreboard.Scoreboard scoreboard =
+                killer.server.getScoreboard();
+            net.minecraft.scoreboard.ScoreboardObjective killsObj =
+                scoreboard.getObjective("lts_kills");
+            if (killsObj != null) {
+                net.minecraft.scoreboard.ScoreboardPlayerScore score =
+                    scoreboard.getPlayerScore(killer.getEntityName(), killsObj);
+                score.setScore(score.getScore() + 1);
+            }
         }
 
         // Laisse la mort se produire : le joueur mourra, puis au respawn

@@ -60,9 +60,10 @@ public class LtsCoreClient implements ClientModInitializer {
         textRenderer.drawWithShadow(matrixStack, timerText, windowWidth - timerWidth - 4, y, 0xFFFFFF);
         y += 12;
 
-        // Kills
-        if (killsObj != null) {
-            int kills = getScore(scoreboard, KILLS_HOLDER, killsObj);
+        // Kills : lit le score du joueur local dans lts_kills
+        if (killsObj != null && client.player != null) {
+            String playerName = client.player.getEntityName();
+            int kills = getScore(scoreboard, playerName, killsObj);
             Text killsText = new LiteralText("⚔ " + kills).formatted(Formatting.RED);
             int killsWidth = textRenderer.getWidth(killsText);
             textRenderer.drawWithShadow(matrixStack, killsText, windowWidth - killsWidth - 4, y, 0xFFFFFF);
