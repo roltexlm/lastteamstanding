@@ -2,11 +2,10 @@ package fr.lts.core.mixin;
 
 import fr.lts.core.restriction.BannedItems;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.screen.ForgingScreenHandler;
+import net.minecraft.screen.slot.Slot;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -21,12 +20,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(ForgingScreenHandler.class)
 public abstract class AnvilScreenHandlerMixin {
 
-    @Shadow
-    protected Inventory output;
-
-    @Shadow
-    protected Inventory input;
-
     /**
      * Intercepte {@link ForgingScreenHandler#canTakeOutput(PlayerEntity, boolean)}.
      * Si le slot de résultat contient un item avec un enchantement banni (ou
@@ -35,10 +28,24 @@ public abstract class AnvilScreenHandlerMixin {
     @Inject(method = "canTakeOutput", at = @At("HEAD"), cancellable = true)
     protected void lts$canTakeOutput(PlayerEntity player, boolean present,
                                       CallbackInfoReturnable<Boolean> cir) {
-        if (output == null) return;
-        ItemStack result = output.getStack(0);
-        if (result != null && !result.isEmpty() && BannedItems.isItemStackBanned(result)) {
-            cir.setReturnValue(false);
+        ForgingScreenHandler self = (ForgingScreenHandler) (Object) this;
+        // Le slot de résultat est le dernier slot (OUTPUT_SLOT_INDEX = 2).
+        // On parcourt les slots pour trouver celui de résultat.
+        for (Slot slot : self.slots) {
+            if (slot.getClass().getName().contains("ForgingResultSlot") || slot.getClass().getName().contains("ResultSlot")) {
+                ItemStack result = slot.getStack();
+                if (result != null && !result.isEmpty() && BannedItems.isItemStackBanned(result)) {
+                    cir.setReturnValue(false);
+                    return;
+                }
+            }
+        }
+        // Fallback : vérifie le slot à l'index 2 (OUTPUT_SLOT_INDEX).
+        if (self.slots.size() > 2) {
+            ItemStack result = self.getSlot(2).getStack();
+            if (result != null && !result.isEmpty() && BannedItems.isItemStackBanned(result)) {
+                cir.setReturnValue(false);
+            }
         }
     }
 }

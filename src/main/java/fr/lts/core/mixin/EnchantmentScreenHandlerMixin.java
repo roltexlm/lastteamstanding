@@ -6,7 +6,6 @@ import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.screen.EnchantmentScreenHandler;
 import net.minecraft.util.registry.Registry;
 import org.spongepowered.asm.mixin.Mixin;
-import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -22,17 +21,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(EnchantmentScreenHandler.class)
 public abstract class EnchantmentScreenHandlerMixin {
 
-    @Shadow
-    public final int[] enchantmentId;
-
-    @Shadow
-    public final int[] enchantmentLevel;
-
-    private EnchantmentScreenHandlerMixin() {
-        this.enchantmentId = null;
-        this.enchantmentLevel = null;
-    }
-
     /**
      * Intercepte {@link EnchantmentScreenHandler#onButtonClick(PlayerEntity, int)}.
      * Si l'enchantement sélectionné (via l'index id) est banni, on annule.
@@ -40,11 +28,14 @@ public abstract class EnchantmentScreenHandlerMixin {
     @Inject(method = "onButtonClick", at = @At("HEAD"), cancellable = true)
     public void lts$onButtonClick(PlayerEntity player, int id,
                                    CallbackInfoReturnable<Boolean> cir) {
-        if (id < 0 || id >= enchantmentId.length) {
+        EnchantmentScreenHandler self = (EnchantmentScreenHandler) (Object) this;
+        int[] enchIds = self.enchantmentId;
+        int[] enchLevels = self.enchantmentLevel;
+        if (id < 0 || id >= enchIds.length) {
             return;
         }
-        int enchRawId = enchantmentId[id];
-        int enchLevel = enchantmentLevel[id];
+        int enchRawId = enchIds[id];
+        int enchLevel = enchLevels[id];
         if (enchRawId < 0) {
             return;
         }
