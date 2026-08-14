@@ -42,6 +42,9 @@ public final class GameState {
     /** Nombre de teams actives au moment du /lts start (pour éviter la victoire instantanée en solo). */
     private int initialTeamsCount = 0;
 
+    /** Si le PvP est activé (s active à 1h de jeu). */
+    private boolean pvpEnabled = false;
+
     public GamePhase getPhase() {
         return phase;
     }
@@ -98,6 +101,14 @@ public final class GameState {
         this.initialTeamsCount = initialTeamsCount;
     }
 
+    public boolean isPvpEnabled() {
+        return pvpEnabled;
+    }
+
+    public void setPvpEnabled(boolean pvpEnabled) {
+        this.pvpEnabled = pvpEnabled;
+    }
+
     /**
      * Réinitialise l'état à sa valeur initiale (LOBBY, easy, timer à -1, etc.).
      * La taille de map et le kill count sont aussi reset.
@@ -110,5 +121,6 @@ public final class GameState {
         this.killCount = 0;
         this.startTimeTicks = -1L;
         this.initialTeamsCount = 0;
+        this.pvpEnabled = false;
     }
 }

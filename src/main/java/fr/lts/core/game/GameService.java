@@ -5,6 +5,7 @@ import fr.lts.core.team.TeamService;
 import net.minecraft.entity.attribute.EntityAttributeInstance;
 import net.minecraft.entity.attribute.EntityAttributes;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.item.ItemStack;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.GameMode;
@@ -238,6 +239,9 @@ public class GameService {
                     continue;
                 }
                 unstunPlayer(player);
+                // Donne 6 pumpkin pies a chaque joueur au demarrage.
+                ItemStack pies = new ItemStack(net.minecraft.item.Items.PUMPKIN_PIE, 6);
+                player.getInventory().insertStack(pies);
             }
         }
 

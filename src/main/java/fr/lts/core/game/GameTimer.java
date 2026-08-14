@@ -50,6 +50,14 @@ public final class GameTimer {
         // Envoie l'état à tous les clients via packet custom.
         LtsNetworking.broadcastGameState(server, remainingSeconds, killsByPlayer);
 
+        // Active le PvP après 1h de jeu (3600s).
+        long elapsedSeconds = GameState.GAME_DURATION_TICKS / 20L - remainingSeconds;
+        if (!state.isPvpEnabled() && elapsedSeconds >= 3600L) {
+            state.setPvpEnabled(true);
+            applyGlowingToAll(server);
+            broadcastMessage(server, "§cLe PvP est désormais activé !");
+        }
+
         // Vérifie la fin de partie : timer écoulé.
         if (remainingTicks <= 0) {
             game.endByTimer(server);
@@ -86,6 +94,25 @@ public final class GameTimer {
      * Vérifie s'il ne reste qu'une seule team (ou aucune) avec au moins un
      * joueur vivant. Si oui, déclenche la fin de partie.
      */
+    /**
+     * Applique l'effet Glowing infini à tous les joueurs connectés.
+     */
+    private static void applyGlowingToAll(MinecraftServer server) {
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            player.addStatusEffect(new net.minecraft.entity.effect.StatusEffectInstance(
+                net.minecraft.entity.effect.StatusEffects.GLOWING,
+                net.minecraft.entity.effect.StatusEffectInstance.INFINITE,
+                0, false, false, true));
+        }
+    }
+
+    private static void broadcastMessage(MinecraftServer server, String message) {
+        net.minecraft.text.Text text = new net.minecraft.text.LiteralText(message);
+        for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+            player.sendMessage(text, false);
+        }
+    }
+
     private static void checkLastTeamStanding(MinecraftServer server, GameService game, GameState state) {
         TeamService ts = game.getTeamService();
         List<Team> activeTeams = ts.getActiveTeams();
