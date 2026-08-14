@@ -101,7 +101,7 @@ public final class GameTimer {
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             player.addStatusEffect(new net.minecraft.entity.effect.StatusEffectInstance(
                 net.minecraft.entity.effect.StatusEffects.GLOWING,
-                net.minecraft.entity.effect.StatusEffectInstance.INFINITE,
+                999999,
                 0, false, false, true));
         }
     }
