@@ -4,8 +4,7 @@ import fr.lts.core.LtsState;
 import fr.lts.core.game.GamePhase;
 import fr.lts.core.game.GameState;
 import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.server.MinecraftServer;
+import net.minecraft.entity.EntityType;import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.world.ServerWorld;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 
@@ -51,11 +50,10 @@ public final class MobCleanupHandler {
 
         // Parcourt tous les mondes et retire les evokers et horses.
         for (ServerWorld world : server.getWorlds()) {
-            for (Entity entity : world.getEntitiesByType(EntityType.EVOKER)) {
-                entity.discard();
-            }
-            for (Entity entity : world.getEntitiesByType(EntityType.HORSE)) {
-                entity.discard();
+            for (Entity entity : world.iterateEntities()) {
+                if (entity.getType() == EntityType.EVOKER || entity.getType() == EntityType.HORSE) {
+                    entity.discard();
+                }
             }
         }
     }
