@@ -32,11 +32,18 @@ public final class NetherBlockHandler {
             if (state.getPhase() != GamePhase.RUNNING && state.getPhase() != GamePhase.PLACEMENT) {
                 return;
             }
-            // Si le joueur arrive dans le Nether, le renvoyer a l overworld.
+            // Si le joueur arrive dans le Nether, le renvoyer devant le
+            // portail dans l overworld. Les coordonnees du Nether sont
+            // divisees par 8 par rapport a l overworld, donc on multiplie.
             if (destination.getRegistryKey() == World.NETHER) {
                 ServerWorld overworld = player.server.getOverworld();
                 if (overworld != null) {
-                    player.teleport(overworld, player.getX(), player.getY(), player.getZ(),
+                    double x = player.getX() * 8.0;
+                    double z = player.getZ() * 8.0;
+                    // Trouve la surface a cette position dans l overworld.
+                    int y = overworld.getTopY(net.minecraft.world.Heightmap.Type.MOTION_BLOCKING_NO_LEAVES,
+                        (int) x, (int) z);
+                    player.teleport(overworld, x, y, z,
                         player.getYaw(), player.getPitch());
                 }
             }
