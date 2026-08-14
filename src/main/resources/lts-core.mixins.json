@@ -4,7 +4,8 @@
   "package": "fr.lts.core.mixin",
   "compatibilityLevel": "JAVA_16",
   "mixins": [
-    "ScreenHandlerMixin"
+    "ScreenHandlerMixin",
+    "ItemEntityMixin"
   ],
   "client": [],
   "injectors": {

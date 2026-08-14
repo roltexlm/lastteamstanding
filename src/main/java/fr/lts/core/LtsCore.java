@@ -3,6 +3,7 @@ package fr.lts.core;
 import fr.lts.core.command.LtsCommands;
 import fr.lts.core.game.GameTimer;
 import fr.lts.core.game.PlayerDeathHandler;
+import fr.lts.core.restriction.BannedItemUseHandler;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
@@ -42,6 +43,9 @@ public class LtsCore implements ModInitializer {
         // Timer serveur : met a jour le scoreboard (temps restant + kills)
         // et verifie la fin de partie (timer ecoule ou derniere team).
         ServerTickEvents.END_SERVER_TICK.register(GameTimer::onServerTick);
+
+        // Blocage des items bannis : usage (clic droit) + attaque (clic gauche).
+        BannedItemUseHandler.register();
 
 
         LOGGER.info("[LTS] Coeur de jeu prêt.");

@@ -2,6 +2,7 @@ package fr.lts.core.restriction;
 
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.Enchantments;
+import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.registry.Registry;
@@ -128,5 +129,39 @@ public final class BannedItems {
     public static int getMaxLevelAllowed(Enchantment enchantment) {
         Integer max = MAX_LEVEL_ALLOWED.get(enchantment);
         return max != null ? max : GLOBAL_MAX_LEVEL;
+    }
+
+    /**
+     * Vérifie si un ItemStack contient au moins un enchantement banni.
+     * (Pour les livres enchantés et les items déjà enchantés.)
+     */
+    public static boolean hasBannedEnchantment(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return false;
+        }
+        Map<Enchantment, Integer> enchants = net.minecraft.enchantment.EnchantmentHelper.get(stack);
+        for (Map.Entry<Enchantment, Integer> entry : enchants.entrySet()) {
+            if (isEnchantmentBanned(entry.getKey(), entry.getValue())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Vérifie si un ItemStack est interdit d'interaction :
+     * - item banni (Notch Apple, Shield)
+     * - OU livre enchanté contenant un enchantement banni
+     * - OU item avec un enchantement banni
+     */
+    public static boolean isItemStackBanned(ItemStack stack) {
+        if (stack == null || stack.isEmpty()) {
+            return false;
+        }
+        Identifier itemId = Registry.ITEM.getId(stack.getItem());
+        if (isItemBanned(itemId)) {
+            return true;
+        }
+        return hasBannedEnchantment(stack);
     }
 }
