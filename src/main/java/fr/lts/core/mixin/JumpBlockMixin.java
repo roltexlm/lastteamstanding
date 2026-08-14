@@ -12,29 +12,23 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 /**
  * Bloque le saut pendant la phase de placement (/lts tp, avant /lts start).
  *
- * <p>En 1.17.1, le saut des joueurs n'est pas un attribut mais une méthode
- * {@link LivingEntity#jump()}. On l'annule si la partie est en phase
- * PLACEMENT et que l'entité est un joueur.</p>
+ * <p>Le saut est d\u00e9clench\u00e9 c\u00f4t\u00e9 client, puis le mouvement est envoy\u00e9 au
+ * serveur. Il faut donc bloquer c\u00f4t\u00e9 client. On v\u00e9rifie la phase via
+ * LtsState (qui est accessible c\u00f4t\u00e9 client car le mod est charg\u00e9 des deux
+ * c\u00f4t\u00e9s).</p>
  */
 @Mixin(LivingEntity.class)
 public abstract class JumpBlockMixin {
 
     @Inject(method = "jump", at = @At("HEAD"), cancellable = true)
     private void lts$jump(CallbackInfo ci) {
-        LivingEntity self = (LivingEntity) (Object) this;
-        if (self.world.isClient) {
-            return;
-        }
-        if (!(self instanceof net.minecraft.server.network.ServerPlayerEntity)) {
-            return;
-        }
         try {
             GameState state = LtsState.getGameService().getState();
             if (state.getPhase() == GamePhase.PLACEMENT) {
                 ci.cancel();
             }
-        } catch (IllegalStateException e) {
-            // LtsState non initialise : ignore.
+        } catch (Exception e) {
+            // LtsState non initialise ou c\u00f4t\u00e9 client sans serveur : ignore.
         }
     }
 }

@@ -5,10 +5,11 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "CraftingResultSlotMixin",
-    "EnchantmentScreenHandlerMixin",
+    "EnchantmentScreenHandlerMixin"
+  ],
+  "client": [
     "JumpBlockMixin"
   ],
-  "client": [],
   "injectors": {
     "defaultRequire": 1
   }
