@@ -9,6 +9,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.GameMode;
 import net.minecraft.world.Difficulty;
+import net.minecraft.world.border.WorldBorder;
 
 import java.util.List;
 import java.util.Random;
@@ -90,6 +91,11 @@ public class GameService {
             return TpResult.error("Le monde n'est pas disponible.");
         }
 
+        // Definit la worldborder centree sur l'origine, a la taille de la map.
+        WorldBorder border = world.getWorldBorder();
+        border.setCenter(0, 0);
+        border.setSize(mapSize);
+
         // Placement des teams. On utilise les teams actives non vides ; si
         // toutes sont vides (cas force), on n'a rien à faire.
         List<Team> teamsToPlace = activeTeams;
@@ -104,6 +110,17 @@ public class GameService {
             // Hauteur : surface du monde à cette colonne.
             int y = world.getTopY(net.minecraft.world.Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, x, z);
 
+            // Verifie que le point n'est pas dans l'eau. Si oui, cherche un
+            // point voisin sur terre ferme.
+            if (isWaterAt(world, x, y, z)) {
+                int[] safe = findSafeSpawn(world, x, y, z);
+                if (safe != null) {
+                    x = safe[0];
+                    y = safe[1];
+                    z = safe[2];
+                }
+            }
+
             for (UUID playerId : team.getMembers()) {
                 ServerPlayerEntity player = server.getPlayerManager().getPlayer(playerId);
                 if (player == null) {
@@ -117,6 +134,39 @@ public class GameService {
         state.setPhase(GamePhase.PLACEMENT);
         state.setTpForceNext(false);
         return TpResult.success(mapSize, teamsToPlace.size(), activePlayers);
+    }
+
+    /**
+     * Verifie si un point est dans l'eau (bloc sous le joueur = liquide).
+     */
+    private static boolean isWaterAt(ServerWorld world, int x, int y, int z) {
+        net.minecraft.block.BlockState state = world.getBlockState(new net.minecraft.util.math.BlockPos(x, y - 1, z));
+        return state.getMaterial().isLiquid();
+    }
+
+    /**
+     * Cherche un point de spawn sur terre ferme autour du point initial.
+     * Spirale de recherche jusqu'a 32 blocs de distance.
+     *
+     * @return [x, y, z] ou null si rien trouve.
+     */
+    private static int[] findSafeSpawn(ServerWorld world, int x, int y, int z) {
+        for (int radius = 1; radius <= 32; radius++) {
+            for (int dx = -radius; dx <= radius; dx++) {
+                for (int dz = -radius; dz <= radius; dz++) {
+                    if (Math.abs(dx) != radius && Math.abs(dz) != radius) {
+                        continue; // bordure du cercle seulement
+                    }
+                    int nx = x + dx;
+                    int nz = z + dz;
+                    int ny = world.getTopY(net.minecraft.world.Heightmap.Type.MOTION_BLOCKING_NO_LEAVES, nx, nz);
+                    if (!isWaterAt(world, nx, ny, nz)) {
+                        return new int[]{nx, ny, nz};
+                    }
+                }
+            }
+        }
+        return null;
     }
 
     private void teleportTo(ServerPlayerEntity player, ServerWorld world, double x, double y, double z) {
