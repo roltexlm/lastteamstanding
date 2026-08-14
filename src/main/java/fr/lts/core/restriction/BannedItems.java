@@ -9,6 +9,7 @@ import net.minecraft.util.registry.Registry;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
