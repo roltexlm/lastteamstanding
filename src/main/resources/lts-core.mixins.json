@@ -5,9 +5,13 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "CraftingResultSlotMixin",
-    "EnchantmentScreenHandlerMixin"
+    "EnchantmentScreenHandlerMixin",
+    "AnvilScreenHandlerMixin",
+    "JumpBlockMixin"
   ],
-  "client": [],
+  "client": [
+    "InGameHudMixin"
+  ],
   "injectors": {
     "defaultRequire": 1
   }
