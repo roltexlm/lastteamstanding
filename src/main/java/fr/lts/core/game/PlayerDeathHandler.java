@@ -70,11 +70,15 @@ public final class PlayerDeathHandler {
                 killer.server.getScoreboard();
             net.minecraft.scoreboard.ScoreboardObjective killsObj =
                 scoreboard.getObjective("lts_kills");
-            if (killsObj != null) {
-                net.minecraft.scoreboard.ScoreboardPlayerScore score =
-                    scoreboard.getPlayerScore(killer.getEntityName(), killsObj);
-                score.setScore(score.getScore() + 1);
+            if (killsObj == null) {
+                killsObj = scoreboard.addObjective("lts_kills",
+                    net.minecraft.scoreboard.ScoreboardCriterion.DUMMY,
+                    new net.minecraft.text.LiteralText("Kills"),
+                    net.minecraft.scoreboard.ScoreboardCriterion.RenderType.INTEGER);
             }
+            net.minecraft.scoreboard.ScoreboardPlayerScore score =
+                scoreboard.getPlayerScore(killer.getEntityName(), killsObj);
+            score.setScore(score.getScore() + 1);
         }
 
         // Laisse la mort se produire : le joueur mourra, puis au respawn

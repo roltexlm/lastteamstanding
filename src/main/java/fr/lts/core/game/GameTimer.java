@@ -1,47 +1,36 @@
 package fr.lts.core.game;
 
 import fr.lts.core.LtsState;
+import fr.lts.core.network.LtsNetworking;
 import fr.lts.core.team.Team;
 import fr.lts.core.team.TeamService;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.scoreboard.Scoreboard;
-import net.minecraft.scoreboard.ScoreboardCriterion;
-import net.minecraft.scoreboard.ScoreboardObjective;
-import net.minecraft.text.LiteralText;
-import fr.lts.core.LtsCore;
-import org.apache.logging.log4j.Logger;
+import net.minecraft.server.network.ServerPlayerEntity;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
- * Timer serveur : met à jour le temps restant et le nombre de kills dans le
- * scoreboard (objectifs {@code lts_timer} et {@code lts_kills}), vérifie la fin
- * de partie (timer écoulé ou une seule team restante).
+ * Timer serveur : envoie l'état du jeu (temps restant + kills par joueur) aux
+ * clients via un packet custom, et vérifie la fin de partie (timer écoulé ou
+ * une seule team restante).
  *
  * <p>Doit être appelé à chaque tick serveur (via
  * {@code ServerTickEvents.END_SERVER_TICK} enregistré dans {@link fr.lts.core.LtsCore}).</p>
  */
 public final class GameTimer {
 
-    /** Nom de l'objectif scoreboard pour le temps restant (en secondes). */
-    public static final String TIMER_OBJECTIVE = "lts_timer";
-
-    /** Nom de l'objectif scoreboard pour le nombre de kills. */
-    public static final String KILLS_OBJECTIVE = "lts_kills";
-
-    /** Entrée fictive utilisée comme holder dans le scoreboard. */
-    private static final String TIMER_HOLDER = "LTS Timer";
-    private static final String KILLS_HOLDER = "Kills";
+    private static final org.apache.logging.log4j.Logger LOGGER = LtsCore.LOGGER;
 
     private GameTimer() {
     }
 
     /**
-     * À appeler à chaque tick serveur. Met à jour le scoreboard et vérifie la
+     * À appeler à chaque tick serveur. Envoie l'état aux clients et vérifie la
      * fin de partie.
      */
-    private static final Logger LOGGER = LtsCore.LOGGER;
-
     public static void onServerTick(MinecraftServer server) {
         GameService game = LtsState.getGameService();
         GameState state = game.getState();
@@ -53,16 +42,12 @@ public final class GameTimer {
 
         long remainingTicks = game.getRemainingTicks(server);
         long remainingSeconds = Math.max(0, remainingTicks / 20L);
-        LOGGER.info("[LTS] Tick: phase={}, remaining={}s, kills={}",
-            state.getPhase(), remainingSeconds, state.getKillCount());
 
-        Scoreboard scoreboard = server.getScoreboard();
+        // Récupère les kills par joueur depuis le scoreboard (lts_kills).
+        Map<UUID, Integer> killsByPlayer = collectKills(server);
 
-        // Met à jour le temps restant dans le scoreboard.
-        updateObjective(scoreboard, TIMER_OBJECTIVE, TIMER_HOLDER, (int) remainingSeconds);
-
-        // Met à jour le nombre de kills.
-        updateObjective(scoreboard, KILLS_OBJECTIVE, KILLS_HOLDER, state.getKillCount());
+        // Envoie l'état à tous les clients via packet custom.
+        LtsNetworking.broadcastGameState(server, remainingSeconds, killsByPlayer);
 
         // Vérifie la fin de partie : timer écoulé.
         if (remainingTicks <= 0) {
@@ -75,21 +60,25 @@ public final class GameTimer {
     }
 
     /**
-     * Met à jour (ou crée) un objectif dummy avec une valeur entière.
+     * Collecte les kills par joueur depuis le scoreboard lts_kills.
      */
-    private static void updateObjective(Scoreboard scoreboard, String name, String holder, int value) {
-        ScoreboardObjective objective = scoreboard.getObjective(name);
-        if (objective == null) {
-            objective = scoreboard.addObjective(name,
-                ScoreboardCriterion.DUMMY,
-                new LiteralText(name),
-                ScoreboardCriterion.RenderType.INTEGER);
+    private static Map<UUID, Integer> collectKills(MinecraftServer server) {
+        Map<UUID, Integer> kills = new HashMap<>();
+        // Le scoreboard lts_kills contient les scores par nom de joueur.
+        net.minecraft.scoreboard.Scoreboard scoreboard = server.getScoreboard();
+        net.minecraft.scoreboard.ScoreboardObjective killsObj = scoreboard.getObjective("lts_kills");
+        if (killsObj != null) {
+            for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
+                String name = player.getEntityName();
+                if (scoreboard.getKnownPlayers().contains(name)) {
+                    kills.put(player.getUuid(),
+                        scoreboard.getPlayerScore(name, killsObj).getScore());
+                } else {
+                    kills.put(player.getUuid(), 0);
+                }
+            }
         }
-        // Score du holder.
-        scoreboard.getPlayerScore(holder, objective).setScore(value);
-        // Place l'objectif dans un display slot (SIDEBAR) pour qu'il soit
-        // sync au client. Sans slot, l'objectif n'est pas propagé au client.
-        scoreboard.setObjectiveSlot(Scoreboard.SIDEBAR_DISPLAY_SLOT_ID, objective);
+        return kills;
     }
 
     /**
@@ -121,9 +110,8 @@ public final class GameTimer {
      * Vérifie si une team a au moins un joueur non-spectateur (donc vivant).
      */
     private static boolean hasAliveMember(MinecraftServer server, Team team) {
-        for (java.util.UUID playerId : team.getMembers()) {
-            net.minecraft.server.network.ServerPlayerEntity player =
-                server.getPlayerManager().getPlayer(playerId);
+        for (UUID playerId : team.getMembers()) {
+            ServerPlayerEntity player = server.getPlayerManager().getPlayer(playerId);
             if (player == null) continue;
             if (!player.isSpectator()) {
                 return true;
