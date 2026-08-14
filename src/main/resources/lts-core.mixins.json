@@ -6,7 +6,9 @@
   "mixins": [
     "CraftingResultSlotMixin",
     "EnchantmentScreenHandlerMixin",
-    "AnvilResultMixin"
+    "AnvilResultMixin",
+    "NetherBlockMixin",
+    "EntitySpawnBlockMixin"
   ],
   "client": [
     "JumpBlockMixin"
