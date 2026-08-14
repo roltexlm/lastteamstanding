@@ -59,9 +59,6 @@ public final class GameTimer {
         Scoreboard scoreboard = server.getScoreboard();
 
         // Met à jour le temps restant dans le scoreboard.
-        long remainingTicks = game.getRemainingTicks(server);
-        long remainingSeconds = Math.max(0, remainingTicks / 20L);
-
         updateObjective(scoreboard, TIMER_OBJECTIVE, TIMER_HOLDER, (int) remainingSeconds);
 
         // Met à jour le nombre de kills.
