@@ -39,6 +39,9 @@ public final class GameState {
 
     private long startTimeTicks = -1L; // -1 = partie non démarrée
 
+    /** Nombre de teams actives au moment du /lts start (pour éviter la victoire instantanée en solo). */
+    private int initialTeamsCount = 0;
+
     public GamePhase getPhase() {
         return phase;
     }
@@ -87,6 +90,14 @@ public final class GameState {
         this.startTimeTicks = startTimeTicks;
     }
 
+    public int getInitialTeamsCount() {
+        return initialTeamsCount;
+    }
+
+    public void setInitialTeamsCount(int initialTeamsCount) {
+        this.initialTeamsCount = initialTeamsCount;
+    }
+
     /**
      * Réinitialise l'état à sa valeur initiale (LOBBY, easy, timer à -1, etc.).
      * La taille de map et le kill count sont aussi reset.
@@ -98,5 +109,6 @@ public final class GameState {
         this.tpForceNext = false;
         this.killCount = 0;
         this.startTimeTicks = -1L;
+        this.initialTeamsCount = 0;
     }
 }

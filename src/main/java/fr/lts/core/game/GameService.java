@@ -193,6 +193,7 @@ public class GameService {
 
         state.setPhase(GamePhase.RUNNING);
         state.setStartTimeTicks(server.getOverworld().getTime());
+        state.setInitialTeamsCount(teamService.getActiveTeams().size());
         return StartResult.success();
     }
 

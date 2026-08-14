@@ -110,7 +110,9 @@ public final class GameTimer {
             }
         }
 
-        if (aliveTeams <= 1) {
+        // Ne déclenche la victoire que si on avait au moins 2 teams au
+        // départ (sinon victoire instantanée en solo).
+        if (aliveTeams <= 1 && state.getInitialTeamsCount() >= 2) {
             game.endByVictory(server, winner);
         }
     }
