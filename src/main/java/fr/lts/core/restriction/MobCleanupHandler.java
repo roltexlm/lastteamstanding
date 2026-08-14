@@ -50,7 +50,15 @@ public final class MobCleanupHandler {
 
         // Parcourt tous les mondes et retire les evokers et horses.
         for (ServerWorld world : server.getWorlds()) {
-            for (Entity entity : world.iterateEntities()) {
+            // Copie la liste pour eviter les ConcurrentModificationException
+            // et les NullPointerException si une entite est supprimee pendant
+            // l iteration.
+            java.util.List<Entity> entities = new java.util.ArrayList<>();
+            world.iterateEntities().forEach(entities::add);
+            for (Entity entity : entities) {
+                if (entity == null || entity.isRemoved()) {
+                    continue;
+                }
                 if (entity.getType() == EntityType.EVOKER || entity.getType() == EntityType.HORSE) {
                     entity.discard();
                 }
