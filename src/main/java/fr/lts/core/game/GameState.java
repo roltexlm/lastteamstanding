@@ -30,13 +30,12 @@ public final class GameState {
     // ----- Timer -----
 
     /**
-     * Durée totale d'une partie : 2h33, soit 9180 secondes
-     * (2x3600 + 33x60 = 7200 + 1980 = 9180s).
+     * Durée totale d'une partie : 2h33, soit 9214 secondes
+     * (2x3600 + 33x60 + 34 = 9214s).
      *
-     * <p>1 semaine in-game (7x20min) = 2h20 = 8400s, arrondi à 2h33
-     * (9180s) pour coller à la durée souhaitée.</p>
+     * <p>1 semaine in-game (7x20min) = 2h20 = 8400s, à 2h33 exactement (9214s).</p>
      */
-    public static final long GAME_DURATION_TICKS = 9180L * 20L; // 183 600 ticks
+    public static final long GAME_DURATION_TICKS = 9214L * 20L; // 184 280 ticks
 
     private long startTimeTicks = -1L; // -1 = partie non démarrée
 
