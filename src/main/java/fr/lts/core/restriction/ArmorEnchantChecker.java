@@ -5,6 +5,7 @@ import fr.lts.core.game.GamePhase;
 import fr.lts.core.game.GameService;
 import net.minecraft.enchantment.Enchantment;
 import net.minecraft.enchantment.EnchantmentHelper;
+import net.minecraft.entity.EquipmentSlot;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.server.MinecraftServer;
@@ -47,18 +48,19 @@ public final class ArmorEnchantChecker {
     }
 
     private static void checkArmor(ServerPlayerEntity player) {
-        PlayerInventory inv = player.getInventory();
-
-        // Slots d'armure : 36 (feet), 37 (legs), 38 (chest), 39 (head).
-        for (int i = 36; i <= 39; i++) {
-            ItemStack armor = inv.getStack(i);
+        // Utilise getEquippedStack pour accéder aux 4 slots d'armure.
+        for (EquipmentSlot slot : new EquipmentSlot[]{
+                EquipmentSlot.HEAD, EquipmentSlot.CHEST, EquipmentSlot.LEGS, EquipmentSlot.FEET
+        }) {
+            ItemStack armor = player.getEquippedStack(slot);
             if (armor.isEmpty() || !armor.hasEnchantments()) {
                 continue;
             }
             if (hasBannedEnchant(armor)) {
                 // Retire l'armure du slot.
-                inv.setStack(i, ItemStack.EMPTY);
+                player.equipStack(slot, ItemStack.EMPTY);
                 // Remet dans l'inventaire (ou jette au sol si plein).
+                PlayerInventory inv = player.getInventory();
                 if (!inv.insertStack(armor)) {
                     player.dropItem(armor, false);
                 }
