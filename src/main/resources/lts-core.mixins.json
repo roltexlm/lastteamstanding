@@ -5,7 +5,8 @@
   "compatibilityLevel": "JAVA_16",
   "mixins": [
     "CraftingResultSlotMixin",
-    "EnchantmentScreenHandlerMixin"
+    "EnchantmentScreenHandlerMixin",
+    "AnvilResultMixin"
   ],
   "client": [
     "JumpBlockMixin"
