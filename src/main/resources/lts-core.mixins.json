@@ -7,7 +7,6 @@
     "CraftingResultSlotMixin",
     "EnchantmentScreenHandlerMixin",
     "AnvilResultMixin",
-    "NetherBlockMixin",
     "EntitySpawnBlockMixin"
   ],
   "client": [
