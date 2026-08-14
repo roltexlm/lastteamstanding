@@ -1,5 +1,6 @@
 package fr.lts.core.game;
 
+import fr.lts.core.LtsCore;
 import fr.lts.core.LtsState;
 import fr.lts.core.network.LtsNetworking;
 import fr.lts.core.team.Team;
