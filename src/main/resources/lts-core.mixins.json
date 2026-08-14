@@ -8,9 +8,7 @@
     "EnchantmentScreenHandlerMixin",
     "JumpBlockMixin"
   ],
-  "client": [
-    "InGameHudMixin"
-  ],
+  "client": [],
   "injectors": {
     "defaultRequire": 1
   }
