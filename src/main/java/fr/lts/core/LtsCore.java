@@ -5,7 +5,6 @@ import fr.lts.core.game.GameTimer;
 import fr.lts.core.game.PlayerDeathHandler;
 import fr.lts.core.restriction.ArmorEnchantChecker;
 import fr.lts.core.restriction.BannedItemUseHandler;
-import fr.lts.core.restriction.NetherBlockHandler;
 import fr.lts.core.restriction.PvpHandler;
 import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
@@ -50,7 +49,6 @@ public class LtsCore implements ModInitializer {
         // Blocage des items bannis : usage (clic droit) + attaque (clic gauche).
         BannedItemUseHandler.register();
         PvpHandler.register();
-        NetherBlockHandler.register();
 
         // Vérifie que les joueurs ne portent pas d'armure avec enchant banni.
         ServerTickEvents.END_SERVER_TICK.register(ArmorEnchantChecker::onServerTick);
