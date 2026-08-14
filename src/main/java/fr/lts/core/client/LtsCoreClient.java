@@ -57,13 +57,13 @@ public class LtsCoreClient implements ClientModInitializer {
 
         // Timer : format HH:MM:SS
         String timeStr = formatTime(remainingSeconds);
-        Text timerText = new LiteralText("Temps: " + timeStr).formatted(Formatting.GOLD);
+        Text timerText = new LiteralText(timeStr).formatted(Formatting.GOLD);
         int timerWidth = textRenderer.getWidth(timerText);
         textRenderer.drawWithShadow(matrixStack, timerText, windowWidth - timerWidth - 4, y, 0xFFFFFF);
         y += 12;
 
         // Kills
-        Text killsText = new LiteralText("Kills: " + kills).formatted(Formatting.RED);
+        Text killsText = new LiteralText("⚔ " + kills).formatted(Formatting.RED);
         int killsWidth = textRenderer.getWidth(killsText);
         textRenderer.drawWithShadow(matrixStack, killsText, windowWidth - killsWidth - 4, y, 0xFFFFFF);
     }
