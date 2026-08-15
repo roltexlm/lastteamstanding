@@ -15,25 +15,31 @@ import net.minecraft.util.Formatting;
  * Point d'entrée client.
  *
  * <p>Gère l'affichage HUD : temps restant + nombre de kills, reçus via packet
- * custom du serveur ({@link LtsNetworking}). Affiché uniquement pendant une
- * partie (quand l'état a été reçu au moins une fois).</p>
+ * custom du serveur. Affiché uniquement pendant une partie (quand l'état a
+ * été reçu au moins une fois).</p>
+ *
+ * <p>Stocke aussi la phase de jeu côté client (pour le JumpBlockMixin).</p>
  */
 public class LtsCoreClient implements ClientModInitializer {
 
     /** État reçu du serveur (mis à jour par packet). -1 = pas de partie. */
     private static long remainingSeconds = -1;
     private static int kills = 0;
+    /** Phase de jeu côté client (LOBBY, PLACEMENT, RUNNING, ENDED). */
+    private static String clientPhase = "LOBBY";
 
     @Override
     public void onInitializeClient() {
-        // Reçoit l'état du jeu (timer + kills) du serveur.
+        // Reçoit l'état du jeu (timer + kills + phase) du serveur.
         ClientPlayNetworking.registerGlobalReceiver(LtsNetworking.STATE_PACKET_ID,
             (client, handler, buf, responseSender) -> {
                 long remaining = buf.readLong();
                 int k = buf.readInt();
+                String phase = buf.readString();
                 client.execute(() -> {
                     remainingSeconds = remaining;
                     kills = k;
+                    clientPhase = phase;
                 });
             });
 
@@ -74,6 +80,14 @@ public class LtsCoreClient implements ClientModInitializer {
     public static void resetState() {
         remainingSeconds = -1;
         kills = 0;
+        clientPhase = "LOBBY";
+    }
+
+    /**
+     * Retourne la phase de jeu côté client.
+     */
+    public static String getClientPhase() {
+        return clientPhase;
     }
 
     /**

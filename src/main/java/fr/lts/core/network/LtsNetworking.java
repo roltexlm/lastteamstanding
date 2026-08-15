@@ -26,10 +26,11 @@ public final class LtsNetworking {
      * Envoie l'état du jeu (temps restant en secondes + kills du joueur) à un
      * joueur.
      */
-    public static void sendGameState(ServerPlayerEntity player, long remainingSeconds, int kills) {
+    public static void sendGameState(ServerPlayerEntity player, long remainingSeconds, int kills, String phase) {
         PacketByteBuf buf = PacketByteBufs.create();
         buf.writeLong(remainingSeconds);
         buf.writeInt(kills);
+        buf.writeString(phase);
         ServerPlayNetworking.send(player, STATE_PACKET_ID, buf);
     }
 
@@ -40,7 +41,7 @@ public final class LtsNetworking {
                                             java.util.Map<java.util.UUID, Integer> killsByPlayer) {
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             int kills = killsByPlayer.getOrDefault(player.getUuid(), 0);
-            sendGameState(player, remainingSeconds, kills);
+            sendGameState(player, remainingSeconds, kills, state.getPhase().name());
         }
     }
 }
