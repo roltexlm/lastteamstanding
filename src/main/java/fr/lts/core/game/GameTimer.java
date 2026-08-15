@@ -48,7 +48,7 @@ public final class GameTimer {
         Map<UUID, Integer> killsByPlayer = collectKills(server);
 
         // Envoie l'état à tous les clients via packet custom.
-        LtsNetworking.broadcastGameState(server, remainingSeconds, killsByPlayer);
+        LtsNetworking.broadcastGameState(server, remainingSeconds, killsByPlayer, state.getPhase().name());
 
         // Active le PvP après 1h de jeu (3600s).
         long elapsedSeconds = GameState.GAME_DURATION_TICKS / 20L - remainingSeconds;

@@ -38,10 +38,11 @@ public final class LtsNetworking {
      * Envoie l'état du jeu à tous les joueurs connectés.
      */
     public static void broadcastGameState(MinecraftServer server, long remainingSeconds,
-                                            java.util.Map<java.util.UUID, Integer> killsByPlayer) {
+                                            java.util.Map<java.util.UUID, Integer> killsByPlayer,
+                                            String phase) {
         for (ServerPlayerEntity player : server.getPlayerManager().getPlayerList()) {
             int kills = killsByPlayer.getOrDefault(player.getUuid(), 0);
-            sendGameState(player, remainingSeconds, kills, state.getPhase().name());
+            sendGameState(player, remainingSeconds, kills, phase);
         }
     }
 }
