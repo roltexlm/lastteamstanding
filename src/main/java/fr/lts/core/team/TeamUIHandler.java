@@ -82,8 +82,11 @@ public final class TeamUIHandler {
         Team scoreboardTeam = scoreboard.getTeam(teamName);
         if (scoreboardTeam == null) {
             scoreboardTeam = scoreboard.addTeam(teamName);
-            Formatting fmt = COLOR_MAP.getOrDefault(color, Formatting.WHITE);
-            scoreboardTeam.setColor(fmt);
+            // Ne pas set la couleur de la scoreboard team : le mixin
+            // PlayerDisplayNameMixin s'occupe d'afficher la vraie couleur
+            // hex cote client. Si on set une couleur Formatting ici, elle
+            // ecrase la couleur hex du getDisplayName.
+            scoreboardTeam.setColor(Formatting.WHITE);
             // Affiche le nametag toujours (même à travers les murs).
             scoreboardTeam.setShowFriendlyInvisibles(false);
             scoreboardTeam.setFriendlyFireAllowed(false);
