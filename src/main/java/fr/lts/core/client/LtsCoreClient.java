@@ -1,6 +1,7 @@
 package fr.lts.core.client;
 
 import fr.lts.core.network.LtsNetworking;
+import fr.lts.core.network.TeamColorPacket;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
@@ -28,6 +29,9 @@ public class LtsCoreClient implements ClientModInitializer {
     /** Phase de jeu côté client (LOBBY, PLACEMENT, RUNNING, ENDED). */
     private static String clientPhase = "LOBBY";
 
+    /** Map UUID joueur -> couleur hex (RGB int). Mis a jour par packet. */
+    private static java.util.Map<java.util.UUID, Integer> playerColors = new java.util.HashMap<>();
+
     @Override
     public void onInitializeClient() {
         // Reçoit l'état du jeu (timer + kills + phase) du serveur.
@@ -41,6 +45,19 @@ public class LtsCoreClient implements ClientModInitializer {
                     kills = k;
                     clientPhase = phase;
                 });
+            });
+
+        // Recoit les couleurs hex des teams de chaque joueur.
+        ClientPlayNetworking.registerGlobalReceiver(TeamColorPacket.PACKET_ID,
+            (client, handler, buf, responseSender) -> {
+                int count = buf.readInt();
+                java.util.Map<java.util.UUID, Integer> colors = new java.util.HashMap<>();
+                for (int i = 0; i < count; i++) {
+                    java.util.UUID uuid = buf.readUuid();
+                    int color = buf.readInt();
+                    colors.put(uuid, color);
+                }
+                client.execute(() -> playerColors = colors);
             });
 
         HudRenderCallback.EVENT.register(this::onHudRender);
@@ -88,6 +105,20 @@ public class LtsCoreClient implements ClientModInitializer {
      */
     public static String getClientPhase() {
         return clientPhase;
+    }
+
+    /**
+     * Retourne la couleur hex (RGB int) d un joueur, ou -1 si pas de team.
+     */
+    public static int getPlayerColor(java.util.UUID uuid) {
+        return playerColors.getOrDefault(uuid, -1);
+    }
+
+    /**
+     * Efface les couleurs (au stop).
+     */
+    public static void clearPlayerColors() {
+        playerColors.clear();
     }
 
     /**

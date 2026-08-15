@@ -11,7 +11,8 @@
     "NetherPortalBlockMixin"
   ],
   "client": [
-    "JumpBlockMixin"
+    "JumpBlockMixin",
+    "PlayerDisplayNameMixin"
   ],
   "injectors": {
     "defaultRequire": 1

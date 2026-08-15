@@ -10,6 +10,7 @@ import fr.lts.core.team.Team;
 import fr.lts.core.team.TeamColor;
 import fr.lts.core.team.TeamService;
 import fr.lts.core.team.TeamUIHandler;
+import fr.lts.core.network.TeamColorPacket;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
@@ -88,6 +89,7 @@ public final class TeamCommands {
 
         ts.assign(target.getUuid(), color);
         TeamUIHandler.assignToScoreboardTeam(ctx.getSource().getServer(), target, color);
+        TeamColorPacket.broadcast(ctx.getSource().getServer());
         Team team = ts.getTeam(color);
 
         Formatting fmt = formatFor(color);
@@ -129,6 +131,7 @@ public final class TeamCommands {
                 }
             }
         }
+        TeamColorPacket.broadcast(server);
         ctx.getSource().sendFeedback(
             new LiteralText("Random assign : " + res.totalPlayers + " joueurs répartis dans "
                 + res.teamsUsed + " teams (taille " + ts.getTeamSize() + ")."),
@@ -164,6 +167,7 @@ public final class TeamCommands {
     private static int clear(CommandContext<ServerCommandSource> ctx) {
         LtsState.getTeamService().reset();
         TeamUIHandler.clearAllScoreboardTeams(ctx.getSource().getServer());
+        TeamColorPacket.broadcast(ctx.getSource().getServer());
         ctx.getSource().sendFeedback(
             new LiteralText("Toutes les teams ont été réinitialisées."), false);
         return 1;
@@ -176,6 +180,7 @@ public final class TeamCommands {
         boolean removed = LtsState.getTeamService().remove(target.getUuid());
         if (removed) {
             TeamUIHandler.removeFromScoreboardTeam(ctx.getSource().getServer(), target);
+            TeamColorPacket.broadcast(ctx.getSource().getServer());
             ctx.getSource().sendFeedback(
                 new LiteralText(target.getEntityName() + " retiré de sa team."), false);
             return 1;

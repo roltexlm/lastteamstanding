@@ -11,6 +11,7 @@ import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.command.v1.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -46,6 +47,12 @@ public class LtsCore implements ModInitializer {
         // Timer serveur : met a jour le scoreboard (temps restant + kills)
         // et verifie la fin de partie (timer ecoule ou derniere team).
         ServerTickEvents.END_SERVER_TICK.register(GameTimer::onServerTick);
+
+        // Envoie les couleurs des teams au joueur qui se connecte.
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            fr.lts.core.network.TeamColorPacket.sendToPlayer(handler.player,
+                fr.lts.core.network.TeamColorPacket.collectPlayerColors(server));
+        });
 
         // Blocage des items bannis : usage (clic droit) + attaque (clic gauche).
         BannedItemUseHandler.register();
