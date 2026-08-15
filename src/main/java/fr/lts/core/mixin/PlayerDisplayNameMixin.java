@@ -19,7 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 @Mixin(PlayerEntity.class)
 public abstract class PlayerDisplayNameMixin {
 
-    @Inject(method = "getDisplayName", at = @At("RETURN"), cancellable = true)
+    @Inject(method = "method_5756", at = @At("RETURN"), cancellable = true)
     private void lts$modifyDisplayName(CallbackInfoReturnable<Text> cir) {
         PlayerEntity self = (PlayerEntity) (Object) this;
         int color = LtsCoreClient.getPlayerColor(self.getUuid());

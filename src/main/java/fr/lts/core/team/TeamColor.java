@@ -84,8 +84,11 @@ public enum TeamColor {
      * Recherche d'une couleur par son nom d'affichage (insensible à la casse).
      */
     public static Optional<TeamColor> byName(String name) {
+        String normalized = name.replace(' ', '_').toLowerCase();
         return Arrays.stream(values())
-            .filter(c -> c.displayName.equalsIgnoreCase(name))
+            .filter(c -> c.displayName.replace(' ', '_').equalsIgnoreCase(normalized)
+                     || c.name().replace('_', ' ').equalsIgnoreCase(name)
+                     || c.name().equalsIgnoreCase(normalized))
             .findFirst();
     }
 }
