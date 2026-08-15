@@ -82,11 +82,15 @@ public final class TeamUIHandler {
         Team scoreboardTeam = scoreboard.getTeam(teamName);
         if (scoreboardTeam == null) {
             scoreboardTeam = scoreboard.addTeam(teamName);
-            // Ne pas set la couleur de la scoreboard team : le mixin
-            // PlayerDisplayNameMixin s'occupe d'afficher la vraie couleur
-            // hex cote client. Si on set une couleur Formatting ici, elle
-            // ecrase la couleur hex du getDisplayName.
+            // Ne pas set la couleur Formatting (limite a 16 couleurs).
+            // A la place, on met la vraie couleur hex dans le prefix de
+            // la team. Le nametag affiche prefix + name + suffix, donc
+            // la couleur du prefix s applique au pseudo.
+            int[] rgb = color.getRgb();
+            int rgbColor = (rgb[0] << 16) | (rgb[1] << 8) | rgb[2];
             scoreboardTeam.setColor(Formatting.WHITE);
+            scoreboardTeam.setPrefix(new LiteralText("")
+                .styled(style -> style.withColor(rgbColor)));
             // Affiche le nametag toujours (même à travers les murs).
             scoreboardTeam.setShowFriendlyInvisibles(false);
             scoreboardTeam.setFriendlyFireAllowed(false);
