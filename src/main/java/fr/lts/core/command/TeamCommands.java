@@ -9,7 +9,9 @@ import fr.lts.core.LtsState;
 import fr.lts.core.team.Team;
 import fr.lts.core.team.TeamColor;
 import fr.lts.core.team.TeamService;
+import fr.lts.core.team.TeamUIHandler;
 import net.minecraft.command.argument.EntityArgumentType;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.LiteralText;
@@ -85,6 +87,7 @@ public final class TeamCommands {
         }
 
         ts.assign(target.getUuid(), color);
+        TeamUIHandler.assignToScoreboardTeam(ctx.getSource().getServer(), target, color);
         Team team = ts.getTeam(color);
 
         Formatting fmt = formatFor(color);
@@ -116,6 +119,16 @@ public final class TeamCommands {
         }
 
         TeamService.RandomAssignResult res = ts.randomAssign(ids);
+        // Met a jour les scoreboard teams pour chaque joueur assigne.
+        MinecraftServer server = ctx.getSource().getServer();
+        for (Team t : res.usedTeams) {
+            for (java.util.UUID pid : t.getMembers()) {
+                ServerPlayerEntity p = server.getPlayerManager().getPlayer(pid);
+                if (p != null) {
+                    TeamUIHandler.assignToScoreboardTeam(server, p, t.getColor());
+                }
+            }
+        }
         ctx.getSource().sendFeedback(
             new LiteralText("Random assign : " + res.totalPlayers + " joueurs répartis dans "
                 + res.teamsUsed + " teams (taille " + ts.getTeamSize() + ")."),
@@ -150,6 +163,7 @@ public final class TeamCommands {
 
     private static int clear(CommandContext<ServerCommandSource> ctx) {
         LtsState.getTeamService().reset();
+        TeamUIHandler.clearAllScoreboardTeams(ctx.getSource().getServer());
         ctx.getSource().sendFeedback(
             new LiteralText("Toutes les teams ont été réinitialisées."), false);
         return 1;
@@ -161,6 +175,7 @@ public final class TeamCommands {
         ServerPlayerEntity target = EntityArgumentType.getPlayer(ctx, "player");
         boolean removed = LtsState.getTeamService().remove(target.getUuid());
         if (removed) {
+            TeamUIHandler.removeFromScoreboardTeam(ctx.getSource().getServer(), target);
             ctx.getSource().sendFeedback(
                 new LiteralText(target.getEntityName() + " retiré de sa team."), false);
             return 1;

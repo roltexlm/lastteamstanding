@@ -280,6 +280,8 @@ public class GameService {
 
         teamService.reset();
         state.reset();
+        // Nettoie les scoreboard teams (couleurs des pseudos).
+        fr.lts.core.team.TeamUIHandler.clearAllScoreboardTeams(server);
         // Envoie la phase LOBBY aux clients.
         broadcastPhase(server, GamePhase.LOBBY);
         return StopResult.success();
