@@ -134,6 +134,8 @@ public class GameService {
 
         state.setPhase(GamePhase.PLACEMENT);
         state.setTpForceNext(false);
+        // Envoie la phase aux clients (pour le JumpBlockMixin).
+        broadcastPhase(server, state.getPhase());
         return TpResult.success(mapSize, teamsToPlace.size(), activePlayers);
     }
 
@@ -247,6 +249,8 @@ public class GameService {
 
         state.setPhase(GamePhase.RUNNING);
         state.setStartTimeTicks(server.getOverworld().getTime());
+        // Envoie la phase aux clients (pour le JumpBlockMixin).
+        broadcastPhase(server, state.getPhase());
         state.setInitialTeamsCount(teamService.getActiveTeams().size());
         return StartResult.success();
     }
@@ -276,6 +280,8 @@ public class GameService {
 
         teamService.reset();
         state.reset();
+        // Envoie la phase LOBBY aux clients.
+        broadcastPhase(server, GamePhase.LOBBY);
         return StopResult.success();
     }
 
@@ -308,6 +314,15 @@ public class GameService {
         } else {
             broadcastMessage(server, "§6Fin de partie : ex aequo.");
         }
+    }
+
+    /**
+     * Envoie la phase de jeu a tous les clients (pour le JumpBlockMixin).
+     */
+    private static void broadcastPhase(MinecraftServer server, GamePhase phase) {
+        java.util.Map<java.util.UUID, Integer> emptyKills = new java.util.HashMap<>();
+        fr.lts.core.network.LtsNetworking.broadcastGameState(server,
+            GameState.GAME_DURATION_TICKS / 20L, emptyKills, phase.name());
     }
 
     /**
