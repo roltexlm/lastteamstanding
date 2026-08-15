@@ -1,6 +1,7 @@
 package fr.lts.core.mixin;
 
 import fr.lts.core.client.LtsCoreClient;
+import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.LiteralText;
 import net.minecraft.text.Text;
@@ -13,18 +14,18 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
  * Remplace le displayName des joueurs cote client par une version coloree
  * avec la vraie couleur hex de leur team LTS.
  *
- * <p>Le displayName est utilise pour le nametag au-dessus du joueur, le TAB,
- * et le chat. En le modifiant cote client, on couvre les 3 d un coup.</p>
- *
- * <p>Utilise remap = false car getDisplayName est heritee de Entity et le
- * refmap de Loom 0.9 ne la resout pas correctement en intermediary.</p>
+ * <p>Cible Entity (class_1297) car getDisplayName est defini la, et non dans
+ * PlayerEntity. On filtre ensuite pour ne modifier que les joueurs.</p>
  */
-@Mixin(PlayerEntity.class)
+@Mixin(Entity.class)
 public abstract class PlayerDisplayNameMixin {
 
-    @Inject(method = "getDisplayName", at = @At("RETURN"), cancellable = true, remap = false)
+    @Inject(method = "method_5756", at = @At("RETURN"), cancellable = true)
     private void lts$modifyDisplayName(CallbackInfoReturnable<Text> cir) {
-        PlayerEntity self = (PlayerEntity) (Object) this;
+        Entity self = (Entity) (Object) this;
+        if (!(self instanceof PlayerEntity)) {
+            return;
+        }
         int color = LtsCoreClient.getPlayerColor(self.getUuid());
         if (color >= 0) {
             String name = self.getEntityName();
