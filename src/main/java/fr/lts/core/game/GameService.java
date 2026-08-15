@@ -136,6 +136,8 @@ public class GameService {
         state.setTpForceNext(false);
         // Envoie la phase aux clients (pour le JumpBlockMixin).
         broadcastPhase(server, state.getPhase());
+        // Affiche le title "La partie commence dans quelques instants".
+        fr.lts.core.game.TitleHandler.showTpTitle(server);
         return TpResult.success(mapSize, teamsToPlace.size(), activePlayers);
     }
 
@@ -252,6 +254,8 @@ public class GameService {
         // Envoie la phase aux clients (pour le JumpBlockMixin).
         broadcastPhase(server, state.getPhase());
         state.setInitialTeamsCount(teamService.getActiveTeams().size());
+        // Affiche le title 'Bonne chance !'.
+        fr.lts.core.game.TitleHandler.showStartTitle(server);
         return StartResult.success();
     }
 
@@ -299,6 +303,8 @@ public class GameService {
      */
     public void endByTimer(MinecraftServer server) {
         state.setPhase(GamePhase.ENDED);
+        // Affiche le title ex aequo.
+        fr.lts.core.game.TitleHandler.showVictoryTitle(server, null, true);
         // TODO: affichage title des vainqueurs ex aequo (UI).
         broadcastMessage(server, "§6Temps écoulé ! Les teams restantes gagnent ex aequo.");
     }
@@ -311,6 +317,8 @@ public class GameService {
      */
     public void endByVictory(MinecraftServer server, fr.lts.core.team.Team winner) {
         state.setPhase(GamePhase.ENDED);
+        // Affiche le title de victoire.
+        fr.lts.core.game.TitleHandler.showVictoryTitle(server, winner, false);
         // TODO: affichage title des vainqueurs (UI).
         if (winner != null) {
             broadcastMessage(server, "§6Victoire de la team " + winner.getColor().getDisplayName() + " !");

@@ -126,3 +126,10 @@ public final class TeamUIHandler {
         }
     }
 }
+
+    /**
+     * Retourne la couleur Formatting la plus proche pour une TeamColor.
+     */
+    public static Formatting getFormattingForColor(TeamColor color) {
+        return COLOR_MAP.getOrDefault(color, Formatting.WHITE);
+    }
